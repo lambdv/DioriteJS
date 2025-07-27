@@ -1,60 +1,64 @@
+
+export interface Visitor<T>{
+    visitP(e: P): T;
+}
+
 export interface Component{
-    render(): HTMLElement
+    render(): HTMLElement,
+    //apply<T>(op: Visitor<T>): T;
 }
 
-export abstract class Tag {
-    constructor(
-        children?: Component[],
-        onClick?: Function
-    ) {
-
-    }
-    toHTML(): Tag {
-        throw new Error("Method not implemented.");
-    }
-}
-
-export interface PProps {
-    text: String;
-    className?: String;
+export type Prop = {
+    title?: string,
+    innterText?: string,
+    outerText?: string,
+    className?: string,
+    onClick?: () => void,
 }
 
 export class P implements Component {
-    inner = document.createElement("p");
-    text: String = "";
-    className: String = "";
-    self() {
-        return this.inner.cloneNode() as HTMLElement;
-    }
-
-    constructor(props: PProps) {
-        this.text = props.text;
-        if (props.className) {
-            this.className = props.className as string;
-        }
+    children: Component[];
+    props: Prop;
+    constructor(children: Component[], props?: Prop) {
+        this.children = children;
+        this.props = props || {};
     }
     render(): HTMLElement {
-        let res = this.self();
-        res.innerText = this.text as string;
-        res.className = this.className as string;
+        let res = document.createElement("p");
+        res.innerText = this.props.innterText || "";
+        res.className = this.props.className || "";
         return res;
     }
 }
 
-export interface DivProps {
-    children?: Component[];
-}
-
-export class Div implements Component {
-    inner = document.createElement("div");
-    children: Component[] = [];
-    constructor(props: DivProps = {}) {
-        if (props.children) {
-            this.children = props.children;
-        }
+export class Button implements Component {
+    children: Component[];
+    props: Prop;
+    constructor(children: Component[], props?: Prop) {
+        this.children = children;
+        this.props = props || {};
     }
     render(): HTMLElement {
-        const res = this.inner.cloneNode() as HTMLElement;
+        let res = document.createElement("button");
+        res.innerText = this.props.innterText || "";
+        res.className = this.props.className || "";
+        res.addEventListener("click", (e) => {
+            this.props.onClick?.call(e);    
+        })
+        return res;
+    }
+}
+
+
+export class Div implements Component {
+    children: Component[];
+    props: Prop;
+    constructor(children: Component[], props?: Prop) {
+        this.children = children;
+        this.props = props || {};
+    }
+    render(): HTMLElement {
+        const res = document.createElement("p");
         for (const child of this.children) {
             if (child) res.appendChild(child.render());
         }
